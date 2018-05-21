@@ -35,6 +35,7 @@ class InitCommand(Command):
     def __init__(self, args):
         super(InitCommand, self).__init__(args)
         self.app_name = self.args["<name>"]
+        self.template_name = self.args["--template"]
 
     def action(self):
         """Creates a new git repository based on an mlt template in the
@@ -60,15 +61,11 @@ class InitCommand(Command):
                 template_params = config_helpers.\
                     get_template_parameters_from_file(param_file)
 
-                cwd = os.getcwd()
-                os.chdir(temp_clone)
-                template_dir = os.path.join(constants.TEMPLATES_DIR, template_name)
-                command = "git rev-list -1 HEAD -- {0}".format(template_dir)
-                template_git_sha = process_helpers.run(command.split(" "))
-                os.chdir(cwd)
+                template_git_sha = git_helpers.\
+                    get_latest_sha(temp_clone, os.path.join(constants.TEMPLATES_DIR, template_name))
                 if not skip_crd_check:
                     kubernetes_helpers.check_crds(app_name=self.app_name)
-                data = self._build_mlt_json(template_params, template_git_sha.strip())
+                data = self._build_mlt_json(template_params, template_git_sha)
                 with open(os.path.join(self.app_name,
                                        constants.MLT_CONFIG), 'w') as f:
                     json.dump(data, f, indent=2)
@@ -85,7 +82,11 @@ class InitCommand(Command):
 
     def _build_mlt_json(self, template_parameters, template_git_sha):
         """generates the data to write to mlt.json"""
-        data = {'name': self.app_name, 'namespace': self.app_name, 'template_git_sha': template_git_sha}
+        data = {'name': self.app_name,
+                'template_name': self.template_name,
+                'namespace': self.app_name,
+                'template_git_sha': template_git_sha
+                }
         if not self.args["--registry"]:
             raw_project_bytes = check_output(
                 ["gcloud", "config", "list", "--format",

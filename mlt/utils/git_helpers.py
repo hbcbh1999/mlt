@@ -23,7 +23,7 @@ import shutil
 import tempfile
 from contextlib import contextmanager
 
-from mlt.utils import process_helpers
+from mlt.utils import process_helpers, constants
 
 
 @contextmanager
@@ -39,3 +39,16 @@ def clone_repo(repo):
         # https://bugs.python.org/issue29699
         if os.path.exists(destination):
             shutil.rmtree(destination)
+
+
+def get_latest_sha(repo, repo_folder=None):
+    cwd = os.getcwd()
+    directory = repo
+    command = "git rev-list -1 HEAD"
+    if repo_folder:
+        directory = os.path.join(repo, repo_folder)
+        command = "git rev-list -1 HEAD -- {0}".format(directory)
+    os.chdir(directory)
+    git_sha = process_helpers.run(command.split(" "))
+    os.chdir(cwd)
+    return git_sha.strip()

@@ -18,11 +18,15 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-from mlt.commands.base import Command  # noqa
-from mlt.commands.build import BuildCommand  # noqa
-from mlt.commands.deploy import DeployCommand  # noqa
-from mlt.commands.init import InitCommand  # noqa
-from mlt.commands.status import StatusCommand  # noqa
-from mlt.commands.templates import TemplatesCommand  # noqa
-from mlt.commands.update_template import UpdateTemplateCommand #noqa
-from mlt.commands.undeploy import UndeployCommand  # noqa
+from mlt.commands import Command
+from mlt.utils import (git_helpers, config_helpers)
+
+class UpdateTemplateCommand(Command):
+    def __init__(self, args):
+        super(UpdateTemplateCommand, self).__init__(args)
+        self.config = config_helpers.load_config()
+
+    def action(self):
+        """Update the template instance with new template version if template is updated"""
+        pass
+
