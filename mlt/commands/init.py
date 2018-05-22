@@ -61,8 +61,10 @@ class InitCommand(Command):
                 template_params = config_helpers.\
                     get_template_parameters_from_file(param_file)
 
+                template_folder = os.path.join(constants.TEMPLATES_DIR,
+                                               template_name)
                 template_git_sha = git_helpers.\
-                    get_latest_sha(temp_clone, os.path.join(constants.TEMPLATES_DIR, template_name))
+                    get_latest_sha(temp_clone, template_folder)
                 if not skip_crd_check:
                     kubernetes_helpers.check_crds(app_name=self.app_name)
                 data = self._build_mlt_json(template_params, template_git_sha)

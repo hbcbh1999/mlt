@@ -22,8 +22,7 @@ import os
 import shutil
 import tempfile
 from contextlib import contextmanager
-
-from mlt.utils import process_helpers, constants
+from mlt.utils import process_helpers
 
 
 @contextmanager
