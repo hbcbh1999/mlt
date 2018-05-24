@@ -116,15 +116,18 @@ jobs:
             ./google-cloud-sdk/bin/gcloud beta container clusters delete "$MLT_TEST_CLUSTER" --zone "us-west1-b" --project "intelai-mlt" --quiet
 
 workflows:
-   version: 2
-   nightly:
-     triggers:
-       - schedule:
-           cron: "0 8 * * *"
-           filters:
-             branches:
-               only:
-                 - master
-                 - ashahba/cron
-     jobs:
-       - build
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+  daily:
+    triggers:
+      - schedule:
+          # midnight daily
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - build
