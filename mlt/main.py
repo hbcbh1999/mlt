@@ -24,15 +24,20 @@ Usage:
   mlt (-h | --help)
   mlt --version
   mlt init [--template=<template> --template-repo=<repo>]
-      [--registry=<registry> --namespace=<namespace]
+      [--registry=<registry> --namespace=<namespace>]
       [--skip-crd-check] <name>
+  mlt config (list | set <name> <value> | remove <name>)
   mlt build [--watch]
-  mlt deploy [--no-push] [-i | --interactive] [-s | --sync]
-      [--retries=<retries>] [--skip-crd-check] [<kube_spec>]
+  mlt deploy [--no-push] [-i | --interactive] [-l | --logs]
+      [--retries=<retries>] [--skip-crd-check]
+      [--since=<duration>] [<kube_spec>]
   mlt (sync) (create | delete [--sync-spec=<spec>] | doctor | get | version |
        watch)
   mlt undeploy
+  mlt status
   mlt (template | templates) list [--template-repo=<repo>]
+  mlt (log | logs) [--since=<duration>] [--retries=<retries>]
+  mlt events
 
 Options:
   --template=<template>     Template name for app
@@ -56,27 +61,41 @@ Options:
                             specify which file you'd like to deploy
                             interactively as the `kube_spec`. `kube_spec` is
                             only used with this flag.
+  --logs                    Tail logs after deploying [default: False]
   --watch                   Watch project directory and build on file changes
   --no-push                 Deploy your project to kubernetes using the same
                             image from your last run.
-
+  --since=<duration>        Returns logs newer than a relative
+                            duration like 10s, 1m, or 2h [default: 1m].
 """
 from docopt import docopt
 
+<<<<<<< HEAD
 import mlt
 from mlt.commands import (BuildCommand, DeployCommand, InitCommand,
                           SyncCommand, TemplatesCommand, UndeployCommand)
+=======
+from mlt.commands import (BuildCommand, ConfigCommand, DeployCommand,
+                          EventsCommand, InitCommand, StatusCommand,
+                          TemplatesCommand, UndeployCommand, LogsCommand)
+>>>>>>> f6bea3552f3be63a63cdd98a173cafd4dbec10d2
 from mlt.utils import regex_checks
+
 
 # every available command and its corresponding action will go here
 COMMAND_MAP = (
     ('build', BuildCommand),
+    ('config', ConfigCommand),
     ('deploy', DeployCommand),
     ('init', InitCommand),
+    ('status', StatusCommand),
     ('sync', SyncCommand),
     ('template', TemplatesCommand),
     ('templates', TemplatesCommand),
     ('undeploy', UndeployCommand),
+    ('log', LogsCommand),
+    ('logs', LogsCommand),
+    ('events', EventsCommand)
 )
 
 
@@ -98,7 +117,7 @@ def sanitize_input(args, regex=None):
        It is recommended on docopt github to do validation
     """
     # docker requires repo name to be in lowercase
-    if args["<name>"]:
+    if args["<name>"] and args.get("init"):
         args["<name>"] = args["<name>"].lower()
 
         if not regex_checks.k8s_name_is_valid(args["<name>"], "pod"):
@@ -113,6 +132,10 @@ def sanitize_input(args, regex=None):
     if args["-i"]:
         args["--interactive"] = True
 
+    # -l is an alias, so ensure that we only have to do logic on --logs
+    if args["-l"]:
+        args["--logs"] = True
+
     # docopt doesn't support type assignment:
     # https://github.com/docopt/docopt/issues/8
     args['--retries'] = int(args['--retries'])
@@ -124,6 +147,11 @@ def sanitize_input(args, regex=None):
                          "https://kubernetes.io/docs/concepts/overview"
                          "/working-with-objects/names/#names".format(
                             args['--namespace']))
+
+    # Set and Unset config commands require the name arg
+    if (args.get('set') or args.get('remove')) and not args.get('<name>'):
+        raise ValueError("Name of the configuration parameter must be "
+                         "specified.")
 
     return args
 
