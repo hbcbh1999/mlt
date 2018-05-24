@@ -70,15 +70,11 @@ Options:
 """
 from docopt import docopt
 
-<<<<<<< HEAD
 import mlt
-from mlt.commands import (BuildCommand, DeployCommand, InitCommand,
-                          SyncCommand, TemplatesCommand, UndeployCommand)
-=======
 from mlt.commands import (BuildCommand, ConfigCommand, DeployCommand,
                           EventsCommand, InitCommand, StatusCommand,
-                          TemplatesCommand, UndeployCommand, LogsCommand)
->>>>>>> f6bea3552f3be63a63cdd98a173cafd4dbec10d2
+                          SyncCommand, TemplatesCommand, UndeployCommand,
+                          LogsCommand)
 from mlt.utils import regex_checks
 
 
