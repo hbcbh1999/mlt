@@ -107,10 +107,24 @@ jobs:
           name: Run e2e tests
           command: |
             make test-e2e
-      
+
       - run:
           name: cleanup cluster
           when: always
           command: |
             export MLT_TEST_CLUSTER="mlt-test-cluster$CIRCLE_BUILD_NUM"
             ./google-cloud-sdk/bin/gcloud beta container clusters delete "$MLT_TEST_CLUSTER" --zone "us-west1-b" --project "intelai-mlt" --quiet
+
+workflows:
+   version: 2
+   nightly:
+     triggers:
+       - schedule:
+           cron: "0 8 * * *"
+           filters:
+             branches:
+               only:
+                 - master
+                 - ashahba/cron
+     jobs:
+       - build
